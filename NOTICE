@@ -1,0 +1,30 @@
+NOTICE
+
+This project (dify-python-sdk) is based on the original dify-client project.
+
+Original Project:
+  Project: dify-client
+  Repository: https://github.com/langgenius/dify
+  Copyright (c) 2023 LangGenius
+  License: MIT License
+
+Modifications:
+  Modified by: yuanyouhui (yuanyouhuilyz@gmail.com)
+  Copyright (c) 2025 yuanyouhui
+
+Both the original work and these modifications are distributed under the MIT License.
+See the LICENSE file for the full license text.
+
+================================================================================
+
+THIRD-PARTY COMPONENTS
+
+This software includes the following third-party components:
+
+1. requests
+   License: Apache License 2.0
+   Copyright: Kenneth Reitz and contributors
+   Repository: https://github.com/psf/requests
+
+For detailed license information of third-party components, please refer to their
+respective repositories and documentation.
