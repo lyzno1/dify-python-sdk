@@ -5,13 +5,13 @@ with open("README.md", encoding="utf-8") as fh:
 
 setup(
     name="dify-python-sdk",
-    version="0.1.12",
+    version="0.1.13",
     author="yuanyouhui",
     author_email="yuanyouhuilyz@gmail.com",
     description="A package for interacting with the Dify Service-API (based on dify-client)",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/langgenius/dify",
+    url="https://github.com/lyzno1/dify-python-sdk",
     license="MIT",
     packages=["dify_client"],
     classifiers=[
