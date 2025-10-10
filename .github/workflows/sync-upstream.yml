@@ -36,11 +36,11 @@ jobs:
           git fetch upstream main
           echo "Upstream fetched successfully"
 
-      - name: Check for changes in sdks/python-client
+      - name: Check for changes in sdks/python-client/dify_client
         id: check_changes
         run: |
-          # Get the latest commit hash of upstream sdks/python-client
-          UPSTREAM_HASH=$(git log upstream/main -1 --format="%H" -- sdks/python-client)
+          # Get the latest commit hash of upstream sdks/python-client/dify_client
+          UPSTREAM_HASH=$(git log upstream/main -1 --format="%H" -- sdks/python-client/dify_client)
           echo "Upstream commit: $UPSTREAM_HASH"
 
           # Check if this directory exists in our repo and get its last sync commit
@@ -75,30 +75,25 @@ jobs:
           # Create temporary directory
           mkdir -p /tmp/upstream-sync
 
-          # Extract upstream sdks/python-client to temp directory
-          git archive upstream/main sdks/python-client | tar -x -C /tmp/upstream-sync
+          # Extract upstream sdks/python-client/dify_client to temp directory
+          git archive upstream/main sdks/python-client/dify_client | tar -x -C /tmp/upstream-sync
 
           # Copy Python client files to our dify_client directory
-          if [ -d "/tmp/upstream-sync/sdks/python-client" ]; then
-            echo "Copying files from upstream..."
-
-            # Backup our customizations (if any)
-            if [ -f "dify_client/__init__.py" ]; then
-              cp dify_client/__init__.py /tmp/our_init.py.backup
-            fi
+          if [ -d "/tmp/upstream-sync/sdks/python-client/dify_client" ]; then
+            echo "Copying files from upstream dify_client directory..."
 
             # Copy upstream files
-            rsync -av --exclude='__pycache__' \
-              /tmp/upstream-sync/sdks/python-client/ \
+            rsync -av --delete \
+              --exclude='__pycache__' \
+              --exclude='*.pyc' \
+              --exclude='.pytest_cache' \
+              /tmp/upstream-sync/sdks/python-client/dify_client/ \
               dify_client/
-
-            # Restore our customizations if needed
-            # (You may need to adjust this based on your modifications)
 
             echo "Files copied successfully"
             ls -la dify_client/
           else
-            echo "❌ Error: Upstream directory not found"
+            echo "❌ Error: Upstream dify_client directory not found"
             exit 1
           fi
 
@@ -109,8 +104,22 @@ jobs:
           echo "${{ steps.check_changes.outputs.upstream_hash }}" > .github/.upstream-sync-commit
           git add .github/.upstream-sync-commit
 
-      - name: Check if there are actual file changes
+      - name: Set up Python and uv
         if: steps.check_changes.outputs.changes_detected == 'true'
+        uses: astral-sh/setup-uv@v4
+        with:
+          enable-cache: true
+
+      - name: Run unit tests
+        if: steps.check_changes.outputs.changes_detected == 'true'
+        id: run_tests
+        run: |
+          echo "Running unit tests on synced code..."
+          uv run pytest tests/test_new_apis.py -v --tb=short
+          echo "tests_passed=true" >> $GITHUB_OUTPUT
+
+      - name: Check if there are actual file changes
+        if: steps.check_changes.outputs.changes_detected == 'true' && steps.run_tests.outputs.tests_passed == 'true'
         id: check_diff
         run: |
           git add dify_client/
@@ -128,14 +137,15 @@ jobs:
           UPSTREAM_COMMIT="${{ steps.check_changes.outputs.upstream_hash }}"
           UPSTREAM_SHORT="${UPSTREAM_COMMIT:0:7}"
 
-          git commit -m "sync: update from upstream python-client
+          git commit -m "sync: update from upstream dify_client
 
           Synced from langgenius/dify@$UPSTREAM_SHORT
-          Source: https://github.com/langgenius/dify/tree/$UPSTREAM_COMMIT/sdks/python-client
+          Source: https://github.com/langgenius/dify/tree/$UPSTREAM_COMMIT/sdks/python-client/dify_client
 
           Changes:
           - Automatic sync from upstream repository
-          - Updated Python client implementation
+          - Updated dify_client implementation
+          - Tests passed: unit tests validated
           - See upstream commit for detailed changes"
 
       - name: Push branch
@@ -158,13 +168,17 @@ jobs:
 
           ### 📦 Source
           - **Repository**: [langgenius/dify](https://github.com/langgenius/dify)
-          - **Path**: \\\`sdks/python-client\\\`
+          - **Path**: \\\`sdks/python-client/dify_client\\\`
           - **Commit**: [\\\`${UPSTREAM_SHORT}\\\`](https://github.com/langgenius/dify/commit/${UPSTREAM_COMMIT})
+
+          ### ✅ Tests Status
+          - ✅ Unit tests passed (test_new_apis.py)
+          - ✅ Code syntax validated
+          - ℹ️ Integration tests skipped (require API keys)
 
           ### 🔍 Changes
           Please review the changes carefully to ensure:
           - ✅ No breaking changes in our customizations
-          - ✅ All tests pass
           - ✅ Version number is updated if needed
           - ✅ Documentation is up to date
 
@@ -185,12 +199,13 @@ jobs:
           )
 
           gh pr create \
-            --title "sync: Update from upstream python-client (${UPSTREAM_SHORT})" \
+            --title "sync: Update from upstream dify_client (${UPSTREAM_SHORT})" \
             --body "$PR_BODY" \
             --head "$BRANCH_NAME" \
             --base main \
             --label "upstream-sync" \
-            --label "automated"
+            --label "automated" \
+            --label "tests-passing"
 
       - name: Summary
         if: always()
