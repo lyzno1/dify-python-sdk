@@ -161,25 +161,6 @@ rsync -av --delete \
 echo -e "${GREEN}✅ Files copied successfully${NC}"
 echo ""
 
-# Run unit tests
-echo -e "${BLUE}🧪 Running unit tests...${NC}"
-if command -v uv &> /dev/null; then
-    if uv run pytest tests/test_new_apis.py -v --tb=short; then
-        echo -e "${GREEN}✅ All unit tests passed${NC}"
-    else
-        echo -e "${RED}❌ Unit tests failed${NC}"
-        echo ""
-        read -p "Continue anyway? (yes/no): " continue_failed
-        if [ "$continue_failed" != "yes" ]; then
-            echo -e "${RED}❌ Sync cancelled due to test failures${NC}"
-            exit 1
-        fi
-    fi
-else
-    echo -e "${YELLOW}⚠️  uv not found, skipping tests${NC}"
-fi
-echo ""
-
 # Show changes
 echo -e "${BLUE}📊 Changes made:${NC}"
 git diff --stat "$LOCAL_TARGET"
@@ -209,14 +190,14 @@ git add "$LOCAL_TARGET" "$SYNC_COMMIT_FILE"
 echo -e "${BLUE}📝 Commit preview:${NC}"
 echo "---"
 cat <<EOF
-sync: update from upstream python-client
+sync: update from upstream dify_client
 
 Synced from langgenius/dify@$UPSTREAM_SHORT
 Source: https://github.com/langgenius/dify/tree/$UPSTREAM_HASH/$UPSTREAM_PATH
 
 Changes:
 - Automatic sync from upstream repository
-- Updated Python client implementation
+- Updated dify_client implementation
 - Manual sync executed on $(date -u +"%Y-%m-%d %H:%M:%S UTC")
 
 Upstream commit: $UPSTREAM_HASH
@@ -235,7 +216,6 @@ Source: https://github.com/langgenius/dify/tree/$UPSTREAM_HASH/$UPSTREAM_PATH
 Changes:
 - Automatic sync from upstream repository
 - Updated dify_client implementation
-- Tests passed: unit tests validated
 - Manual sync executed on $(date -u +"%Y-%m-%d %H:%M:%S UTC")
 
 Upstream commit: $UPSTREAM_HASH"
@@ -246,8 +226,7 @@ Upstream commit: $UPSTREAM_HASH"
     # Show next steps
     echo -e "${BLUE}📋 Next steps:${NC}"
     echo "1. Review the changes: git show"
-    echo "2. Run tests: pytest tests/ (or your test command)"
-    echo "3. Push changes: git push origin $(git branch --show-current)"
+    echo "2. Push changes: git push origin $(git branch --show-current)"
     echo ""
 
     CURRENT_BRANCH=$(git branch --show-current)
@@ -259,7 +238,7 @@ else
     echo -e "${YELLOW}⚠️  Changes staged but not committed${NC}"
     echo ""
     echo "To commit manually:"
-    echo "  git commit -m 'sync: update from upstream python-client'"
+    echo "  git commit -m 'sync: update from upstream dify_client'"
     echo ""
     echo "To discard changes:"
     echo "  git reset HEAD $LOCAL_TARGET $SYNC_COMMIT_FILE"

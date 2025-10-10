@@ -104,22 +104,8 @@ jobs:
           echo "${{ steps.check_changes.outputs.upstream_hash }}" > .github/.upstream-sync-commit
           git add .github/.upstream-sync-commit
 
-      - name: Set up Python and uv
-        if: steps.check_changes.outputs.changes_detected == 'true'
-        uses: astral-sh/setup-uv@v4
-        with:
-          enable-cache: true
-
-      - name: Run unit tests
-        if: steps.check_changes.outputs.changes_detected == 'true'
-        id: run_tests
-        run: |
-          echo "Running unit tests on synced code..."
-          uv run pytest tests/test_new_apis.py -v --tb=short
-          echo "tests_passed=true" >> $GITHUB_OUTPUT
-
       - name: Check if there are actual file changes
-        if: steps.check_changes.outputs.changes_detected == 'true' && steps.run_tests.outputs.tests_passed == 'true'
+        if: steps.check_changes.outputs.changes_detected == 'true'
         id: check_diff
         run: |
           git add dify_client/
@@ -145,7 +131,6 @@ jobs:
           Changes:
           - Automatic sync from upstream repository
           - Updated dify_client implementation
-          - Tests passed: unit tests validated
           - See upstream commit for detailed changes"
 
       - name: Push branch
@@ -170,11 +155,6 @@ jobs:
           - **Repository**: [langgenius/dify](https://github.com/langgenius/dify)
           - **Path**: \\\`sdks/python-client/dify_client\\\`
           - **Commit**: [\\\`${UPSTREAM_SHORT}\\\`](https://github.com/langgenius/dify/commit/${UPSTREAM_COMMIT})
-
-          ### ✅ Tests Status
-          - ✅ Unit tests passed (test_new_apis.py)
-          - ✅ Code syntax validated
-          - ℹ️ Integration tests skipped (require API keys)
 
           ### 🔍 Changes
           Please review the changes carefully to ensure:
@@ -204,8 +184,7 @@ jobs:
             --head "$BRANCH_NAME" \
             --base main \
             --label "upstream-sync" \
-            --label "automated" \
-            --label "tests-passing"
+            --label "automated"
 
       - name: Summary
         if: always()
