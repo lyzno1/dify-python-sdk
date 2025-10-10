@@ -112,7 +112,7 @@ wheels = [
 
 [[package]]
 name = "dify-python-sdk"
-version = "0.1.12"
+version = "0.1.13"
 source = { editable = "." }
 dependencies = [
     { name = "pytest", version = "8.3.5", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.9'" },

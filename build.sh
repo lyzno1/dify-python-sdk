@@ -7,7 +7,7 @@ echo ""
 
 # Clean old build files
 echo "📦 Cleaning old build files..."
-rm -rf build dist *.egg-info
+rm -rf build dist
 
 # Ensure uv is installed
 if ! command -v uv &> /dev/null; then
@@ -39,11 +39,19 @@ fi
 echo "✅ Checking package integrity..."
 twine check dist/*
 
-# Ask user whether to upload
+# Show build artifacts
 echo ""
 echo "📋 Build completed! Package info:"
 ls -lh dist/
 echo ""
+
+# Verify version in built packages
+echo "🔍 Verifying package version..."
+BUILT_VERSION=$(ls dist/*.whl | grep -oP '\d+\.\d+\.\d+' | head -1)
+echo "   Built version: $BUILT_VERSION"
+echo ""
+
+# Ask user whether to upload
 read -p "Upload to PyPI? (yes/no): " confirm
 
 if [ "$confirm" == "yes" ]; then
