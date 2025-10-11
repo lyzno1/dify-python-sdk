@@ -219,8 +219,6 @@ jobs:
             --body "$PR_BODY" \
             --head "$BRANCH_NAME" \
             --base main \
-            --label "upstream-sync" \
-            --label "automated"
 
       - name: Summary
         if: always()
