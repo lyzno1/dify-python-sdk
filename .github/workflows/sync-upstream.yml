@@ -97,6 +97,32 @@ jobs:
             exit 1
           fi
 
+      - name: Copy upstream config files for reference
+        if: steps.check_changes.outputs.changes_detected == 'true'
+        run: |
+          # Create temporary directory for config files
+          mkdir -p /tmp/upstream-config
+
+          # Extract upstream python-client directory for config files
+          git archive upstream/main sdks/python-client | tar -x -C /tmp/upstream-config
+
+          # Copy config files to reference directory
+          echo "Copying upstream config files to .upstream-reference/..."
+          mkdir -p .upstream-reference
+
+          if [ -f "/tmp/upstream-config/sdks/python-client/README.md" ]; then
+            cp /tmp/upstream-config/sdks/python-client/README.md .upstream-reference/
+            echo "✅ Copied README.md"
+          fi
+
+          if [ -f "/tmp/upstream-config/sdks/python-client/pyproject.toml" ]; then
+            cp /tmp/upstream-config/sdks/python-client/pyproject.toml .upstream-reference/
+            echo "✅ Copied pyproject.toml"
+          fi
+
+          echo "Config files copied successfully"
+          ls -la .upstream-reference/
+
       - name: Update sync commit record
         if: steps.check_changes.outputs.changes_detected == 'true'
         run: |
@@ -108,7 +134,7 @@ jobs:
         if: steps.check_changes.outputs.changes_detected == 'true'
         id: check_diff
         run: |
-          git add dify_client/
+          git add dify_client/ .upstream-reference/
           if git diff --cached --quiet; then
             echo "has_changes=false" >> $GITHUB_OUTPUT
             echo "ℹ️ No actual file changes detected"
@@ -153,8 +179,8 @@ jobs:
 
           ### 📦 Source
           - **Repository**: [langgenius/dify](https://github.com/langgenius/dify)
-          - **Path**: \\\`sdks/python-client/dify_client\\\`
-          - **Commit**: [\\\`${UPSTREAM_SHORT}\\\`](https://github.com/langgenius/dify/commit/${UPSTREAM_COMMIT})
+          - **Path**: \`sdks/python-client/dify_client\`
+          - **Commit**: [\`${UPSTREAM_SHORT}\`](https://github.com/langgenius/dify/commit/${UPSTREAM_COMMIT})
 
           ### 🔍 Changes
           Please review the changes carefully to ensure:
@@ -162,11 +188,21 @@ jobs:
           - ✅ Version number is updated if needed
           - ✅ Documentation is up to date
 
+          ### 📋 Config Files
+          Upstream config files have been copied to \`.upstream-reference/\` for manual review:
+          - \`README.md\` - Review for documentation updates
+          - \`pyproject.toml\` - Check for dependency changes (regenerate uv.lock if needed)
+
+          **Note**: These files are for reference only. Manually merge relevant changes to root config files.
+
           ### 🤖 Automated Sync
           This PR was created automatically by the sync-upstream workflow.
 
           ### 📝 Checklist before merging
           - [ ] Review code changes
+          - [ ] Check \`.upstream-reference/\` for config updates
+          - [ ] Manually merge relevant config changes
+          - [ ] Run \`uv lock\` if dependencies changed
           - [ ] Run tests locally
           - [ ] Update version if breaking changes
           - [ ] Update CHANGELOG.md

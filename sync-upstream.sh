@@ -16,7 +16,9 @@ NC='\033[0m' # No Color
 UPSTREAM_REPO="https://github.com/langgenius/dify.git"
 UPSTREAM_BRANCH="main"
 UPSTREAM_PATH="sdks/python-client/dify_client"
+UPSTREAM_PYTHON_CLIENT="sdks/python-client"
 LOCAL_TARGET="dify_client"
+UPSTREAM_REFERENCE=".upstream-reference"
 SYNC_COMMIT_FILE=".github/.upstream-sync-commit"
 
 # Parse arguments
@@ -135,7 +137,7 @@ trap "rm -rf $TEMP_DIR" EXIT
 
 # Extract upstream files
 echo -e "${BLUE}📦 Extracting upstream files...${NC}"
-git archive upstream/$UPSTREAM_BRANCH $UPSTREAM_PATH | tar -x -C "$TEMP_DIR"
+git archive upstream/$UPSTREAM_BRANCH $UPSTREAM_PYTHON_CLIENT | tar -x -C "$TEMP_DIR"
 
 # Check if files were extracted
 if [ ! -d "$TEMP_DIR/$UPSTREAM_PATH" ]; then
@@ -149,8 +151,8 @@ echo -e "${BLUE}💾 Creating backup at: ${BACKUP_DIR}${NC}"
 mkdir -p "$BACKUP_DIR"
 cp -r "$LOCAL_TARGET" "$BACKUP_DIR/" || true
 
-# Copy files
-echo -e "${BLUE}📋 Copying files from upstream $UPSTREAM_PATH...${NC}"
+# Copy code files
+echo -e "${BLUE}📋 Copying code files from upstream $UPSTREAM_PATH...${NC}"
 rsync -av --delete \
     --exclude='__pycache__' \
     --exclude='*.pyc' \
@@ -158,7 +160,24 @@ rsync -av --delete \
     "$TEMP_DIR/$UPSTREAM_PATH/" \
     "$LOCAL_TARGET/"
 
-echo -e "${GREEN}✅ Files copied successfully${NC}"
+echo -e "${GREEN}✅ Code files copied successfully${NC}"
+echo ""
+
+# Copy config files to reference directory
+echo -e "${BLUE}📋 Copying upstream config files to $UPSTREAM_REFERENCE...${NC}"
+mkdir -p "$UPSTREAM_REFERENCE"
+
+if [ -f "$TEMP_DIR/$UPSTREAM_PYTHON_CLIENT/README.md" ]; then
+    cp "$TEMP_DIR/$UPSTREAM_PYTHON_CLIENT/README.md" "$UPSTREAM_REFERENCE/"
+    echo -e "${GREEN}   ✅ Copied README.md${NC}"
+fi
+
+if [ -f "$TEMP_DIR/$UPSTREAM_PYTHON_CLIENT/pyproject.toml" ]; then
+    cp "$TEMP_DIR/$UPSTREAM_PYTHON_CLIENT/pyproject.toml" "$UPSTREAM_REFERENCE/"
+    echo -e "${GREEN}   ✅ Copied pyproject.toml${NC}"
+fi
+
+echo -e "${GREEN}✅ Config files copied successfully${NC}"
 echo ""
 
 # Show changes
@@ -167,7 +186,7 @@ git diff --stat "$LOCAL_TARGET"
 echo ""
 
 # Check if there are actual changes
-if git diff --quiet "$LOCAL_TARGET"; then
+if git diff --quiet "$LOCAL_TARGET" "$UPSTREAM_REFERENCE"; then
     echo -e "${GREEN}ℹ️  No file changes detected (files are identical)${NC}"
     echo ""
     read -p "Update sync commit anyway? (yes/no): " update_anyway
@@ -184,7 +203,7 @@ echo -e "${GREEN}✅ Updated sync commit record${NC}"
 echo ""
 
 # Stage changes
-git add "$LOCAL_TARGET" "$SYNC_COMMIT_FILE"
+git add "$LOCAL_TARGET" "$UPSTREAM_REFERENCE" "$SYNC_COMMIT_FILE"
 
 # Show commit preview
 echo -e "${BLUE}📝 Commit preview:${NC}"
@@ -241,8 +260,8 @@ else
     echo "  git commit -m 'sync: update from upstream dify_client'"
     echo ""
     echo "To discard changes:"
-    echo "  git reset HEAD $LOCAL_TARGET $SYNC_COMMIT_FILE"
-    echo "  git checkout -- $LOCAL_TARGET"
+    echo "  git reset HEAD $LOCAL_TARGET $UPSTREAM_REFERENCE $SYNC_COMMIT_FILE"
+    echo "  git checkout -- $LOCAL_TARGET $UPSTREAM_REFERENCE"
 fi
 
 echo ""
