@@ -1,6 +1,6 @@
 [project]
 name = "dify-python-sdk"
-version = "0.1.14"
+version = "0.1.15"
 description = "A package for interacting with the Dify Service-API (based on dify-client)"
 readme = "README.md"
 requires-python = ">=3.10"
