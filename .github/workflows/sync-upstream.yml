@@ -28,7 +28,7 @@ jobs:
 
       - name: Add upstream remote
         run: |
-          git remote add upstream https://github.com/langgenius/dify.git || true
+          git remote add upstream https://github.com/langgenius/dify-python-sdk.git || true
           git remote -v
 
       - name: Fetch upstream changes
@@ -36,11 +36,11 @@ jobs:
           git fetch upstream main
           echo "Upstream fetched successfully"
 
-      - name: Check for changes in sdks/python-client/dify_client
+      - name: Check for changes in dify_client
         id: check_changes
         run: |
-          # Get the latest commit hash of upstream sdks/python-client/dify_client
-          UPSTREAM_HASH=$(git log upstream/main -1 --format="%H" -- sdks/python-client/dify_client)
+          # Get the latest commit hash of upstream dify_client
+          UPSTREAM_HASH=$(git log upstream/main -1 --format="%H" -- dify_client)
           echo "Upstream commit: $UPSTREAM_HASH"
 
           # Check if this directory exists in our repo and get its last sync commit
@@ -75,11 +75,11 @@ jobs:
           # Create temporary directory
           mkdir -p /tmp/upstream-sync
 
-          # Extract upstream sdks/python-client/dify_client to temp directory
-          git archive upstream/main sdks/python-client/dify_client | tar -x -C /tmp/upstream-sync
+          # Extract upstream dify_client to temp directory
+          git archive upstream/main dify_client | tar -x -C /tmp/upstream-sync
 
           # Copy Python client files to our dify_client directory
-          if [ -d "/tmp/upstream-sync/sdks/python-client/dify_client" ]; then
+          if [ -d "/tmp/upstream-sync/dify_client" ]; then
             echo "Copying files from upstream dify_client directory..."
 
             # Copy upstream files
@@ -87,7 +87,7 @@ jobs:
               --exclude='__pycache__' \
               --exclude='*.pyc' \
               --exclude='.pytest_cache' \
-              /tmp/upstream-sync/sdks/python-client/dify_client/ \
+              /tmp/upstream-sync/dify_client/ \
               dify_client/
 
             echo "Files copied successfully"
@@ -103,20 +103,20 @@ jobs:
           # Create temporary directory for config files
           mkdir -p /tmp/upstream-config
 
-          # Extract upstream python-client directory for config files
-          git archive upstream/main sdks/python-client | tar -x -C /tmp/upstream-config
+          # Extract upstream config files
+          git archive upstream/main README.md pyproject.toml | tar -x -C /tmp/upstream-config
 
           # Copy config files to reference directory
           echo "Copying upstream config files to .upstream-reference/..."
           mkdir -p .upstream-reference
 
-          if [ -f "/tmp/upstream-config/sdks/python-client/README.md" ]; then
-            cp /tmp/upstream-config/sdks/python-client/README.md .upstream-reference/
+          if [ -f "/tmp/upstream-config/README.md" ]; then
+            cp /tmp/upstream-config/README.md .upstream-reference/
             echo "✅ Copied README.md"
           fi
 
-          if [ -f "/tmp/upstream-config/sdks/python-client/pyproject.toml" ]; then
-            cp /tmp/upstream-config/sdks/python-client/pyproject.toml .upstream-reference/
+          if [ -f "/tmp/upstream-config/pyproject.toml" ]; then
+            cp /tmp/upstream-config/pyproject.toml .upstream-reference/
             echo "✅ Copied pyproject.toml"
           fi
 
@@ -151,8 +151,8 @@ jobs:
 
           git commit -m "sync: update from upstream dify_client
 
-          Synced from langgenius/dify@$UPSTREAM_SHORT
-          Source: https://github.com/langgenius/dify/tree/$UPSTREAM_COMMIT/sdks/python-client/dify_client
+          Synced from langgenius/dify-python-sdk@$UPSTREAM_SHORT
+          Source: https://github.com/langgenius/dify-python-sdk/tree/$UPSTREAM_COMMIT/dify_client
 
           Changes:
           - Automatic sync from upstream repository
@@ -178,9 +178,9 @@ jobs:
           This PR automatically syncs changes from the upstream Dify repository.
 
           ### 📦 Source
-          - **Repository**: [langgenius/dify](https://github.com/langgenius/dify)
-          - **Path**: \`sdks/python-client/dify_client\`
-          - **Commit**: [\`${UPSTREAM_SHORT}\`](https://github.com/langgenius/dify/commit/${UPSTREAM_COMMIT})
+          - **Repository**: [langgenius/dify-python-sdk](https://github.com/langgenius/dify-python-sdk)
+          - **Path**: \`dify_client\`
+          - **Commit**: [\`${UPSTREAM_SHORT}\`](https://github.com/langgenius/dify-python-sdk/commit/${UPSTREAM_COMMIT})
 
           ### 🔍 Changes
           Please review the changes carefully to ensure:

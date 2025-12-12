@@ -13,10 +13,9 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 # Configuration
-UPSTREAM_REPO="https://github.com/langgenius/dify.git"
+UPSTREAM_REPO="https://github.com/langgenius/dify-python-sdk.git"
 UPSTREAM_BRANCH="main"
-UPSTREAM_PATH="sdks/python-client/dify_client"
-UPSTREAM_PYTHON_CLIENT="sdks/python-client"
+UPSTREAM_PATH="dify_client"
 LOCAL_TARGET="dify_client"
 UPSTREAM_REFERENCE=".upstream-reference"
 SYNC_COMMIT_FILE=".github/.upstream-sync-commit"
@@ -137,7 +136,7 @@ trap "rm -rf $TEMP_DIR" EXIT
 
 # Extract upstream files
 echo -e "${BLUE}📦 Extracting upstream files...${NC}"
-git archive upstream/$UPSTREAM_BRANCH $UPSTREAM_PYTHON_CLIENT | tar -x -C "$TEMP_DIR"
+git archive upstream/$UPSTREAM_BRANCH "$UPSTREAM_PATH" README.md pyproject.toml | tar -x -C "$TEMP_DIR"
 
 # Check if files were extracted
 if [ ! -d "$TEMP_DIR/$UPSTREAM_PATH" ]; then
@@ -167,13 +166,13 @@ echo ""
 echo -e "${BLUE}📋 Copying upstream config files to $UPSTREAM_REFERENCE...${NC}"
 mkdir -p "$UPSTREAM_REFERENCE"
 
-if [ -f "$TEMP_DIR/$UPSTREAM_PYTHON_CLIENT/README.md" ]; then
-    cp "$TEMP_DIR/$UPSTREAM_PYTHON_CLIENT/README.md" "$UPSTREAM_REFERENCE/"
+if [ -f "$TEMP_DIR/README.md" ]; then
+    cp "$TEMP_DIR/README.md" "$UPSTREAM_REFERENCE/"
     echo -e "${GREEN}   ✅ Copied README.md${NC}"
 fi
 
-if [ -f "$TEMP_DIR/$UPSTREAM_PYTHON_CLIENT/pyproject.toml" ]; then
-    cp "$TEMP_DIR/$UPSTREAM_PYTHON_CLIENT/pyproject.toml" "$UPSTREAM_REFERENCE/"
+if [ -f "$TEMP_DIR/pyproject.toml" ]; then
+    cp "$TEMP_DIR/pyproject.toml" "$UPSTREAM_REFERENCE/"
     echo -e "${GREEN}   ✅ Copied pyproject.toml${NC}"
 fi
 
@@ -211,8 +210,8 @@ echo "---"
 cat <<EOF
 sync: update from upstream dify_client
 
-Synced from langgenius/dify@$UPSTREAM_SHORT
-Source: https://github.com/langgenius/dify/tree/$UPSTREAM_HASH/$UPSTREAM_PATH
+Synced from langgenius/dify-python-sdk@$UPSTREAM_SHORT
+Source: https://github.com/langgenius/dify-python-sdk/tree/$UPSTREAM_HASH/$UPSTREAM_PATH
 
 Changes:
 - Automatic sync from upstream repository
@@ -229,8 +228,8 @@ read -p "Commit these changes? (yes/no): " confirm_commit
 if [ "$confirm_commit" == "yes" ]; then
     git commit -m "sync: update from upstream dify_client
 
-Synced from langgenius/dify@$UPSTREAM_SHORT
-Source: https://github.com/langgenius/dify/tree/$UPSTREAM_HASH/$UPSTREAM_PATH
+Synced from langgenius/dify-python-sdk@$UPSTREAM_SHORT
+Source: https://github.com/langgenius/dify-python-sdk/tree/$UPSTREAM_HASH/$UPSTREAM_PATH
 
 Changes:
 - Automatic sync from upstream repository
