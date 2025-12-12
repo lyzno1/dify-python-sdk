@@ -13,10 +13,10 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 # Configuration
-UPSTREAM_REPO="https://github.com/langgenius/dify.git"
+UPSTREAM_REPO="https://github.com/langgenius/dify-python-sdk.git"
 UPSTREAM_BRANCH="main"
-UPSTREAM_PATH="sdks/python-client/dify_client"
-UPSTREAM_PYTHON_CLIENT="sdks/python-client"
+UPSTREAM_PATH="dify_client"
+UPSTREAM_PYTHON_CLIENT="."
 LOCAL_TARGET="dify_client"
 UPSTREAM_REFERENCE=".upstream-reference"
 SYNC_COMMIT_FILE=".github/.upstream-sync-commit"
@@ -137,7 +137,7 @@ trap "rm -rf $TEMP_DIR" EXIT
 
 # Extract upstream files
 echo -e "${BLUE}📦 Extracting upstream files...${NC}"
-git archive upstream/$UPSTREAM_BRANCH $UPSTREAM_PYTHON_CLIENT | tar -x -C "$TEMP_DIR"
+git archive upstream/$UPSTREAM_BRANCH "$UPSTREAM_PATH" README.md pyproject.toml | tar -x -C "$TEMP_DIR"
 
 # Check if files were extracted
 if [ ! -d "$TEMP_DIR/$UPSTREAM_PATH" ]; then
@@ -211,8 +211,8 @@ echo "---"
 cat <<EOF
 sync: update from upstream dify_client
 
-Synced from langgenius/dify@$UPSTREAM_SHORT
-Source: https://github.com/langgenius/dify/tree/$UPSTREAM_HASH/$UPSTREAM_PATH
+Synced from langgenius/dify-python-sdk@$UPSTREAM_SHORT
+Source: https://github.com/langgenius/dify-python-sdk/tree/$UPSTREAM_HASH/$UPSTREAM_PATH
 
 Changes:
 - Automatic sync from upstream repository
@@ -227,10 +227,10 @@ echo ""
 # Commit
 read -p "Commit these changes? (yes/no): " confirm_commit
 if [ "$confirm_commit" == "yes" ]; then
-    git commit -m "sync: update from upstream dify_client
+git commit -m "sync: update from upstream dify_client
 
-Synced from langgenius/dify@$UPSTREAM_SHORT
-Source: https://github.com/langgenius/dify/tree/$UPSTREAM_HASH/$UPSTREAM_PATH
+Synced from langgenius/dify-python-sdk@$UPSTREAM_SHORT
+Source: https://github.com/langgenius/dify-python-sdk/tree/$UPSTREAM_HASH/$UPSTREAM_PATH
 
 Changes:
 - Automatic sync from upstream repository
