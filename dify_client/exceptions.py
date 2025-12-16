@@ -1,12 +1,17 @@
 """Custom exceptions for the Dify client."""
 
-from typing import Optional, Dict, Any
+from typing import Any, Dict
 
 
 class DifyClientError(Exception):
     """Base exception for all Dify client errors."""
 
-    def __init__(self, message: str, status_code: int | None = None, response: Dict[str, Any] | None = None):
+    def __init__(
+        self,
+        message: str,
+        status_code: int | None = None,
+        response: Dict[str, Any] | None = None,
+    ):
         super().__init__(message)
         self.message = message
         self.status_code = status_code
@@ -16,7 +21,9 @@ class DifyClientError(Exception):
 class APIError(DifyClientError):
     """Raised when the API returns an error response."""
 
-    def __init__(self, message: str, status_code: int, response: Dict[str, Any] | None = None):
+    def __init__(
+        self, message: str, status_code: int, response: Dict[str, Any] | None = None
+    ):
         super().__init__(message, status_code, response)
         self.status_code = status_code
 
@@ -30,7 +37,9 @@ class AuthenticationError(DifyClientError):
 class RateLimitError(DifyClientError):
     """Raised when rate limit is exceeded."""
 
-    def __init__(self, message: str = "Rate limit exceeded", retry_after: int | None = None):
+    def __init__(
+        self, message: str = "Rate limit exceeded", retry_after: int | None = None
+    ):
         super().__init__(message)
         self.retry_after = retry_after
 
