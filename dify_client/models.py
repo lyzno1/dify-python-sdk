@@ -1,8 +1,8 @@
 """Response models for the Dify client with proper type hints."""
 
-from typing import Optional, List, Dict, Any, Literal, Union
 from dataclasses import dataclass, field
 from datetime import datetime
+from typing import Any, Dict, List, Literal, Union
 
 
 @dataclass
