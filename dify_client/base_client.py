@@ -1,9 +1,9 @@
 """Base client with common functionality for both sync and async clients."""
 
 import json
-import time
 import logging
-from typing import Dict, Callable, Optional
+import time
+from typing import Callable, Dict
 
 try:
     # Python 3.10+
@@ -16,17 +16,15 @@ from urllib.parse import urljoin
 
 import httpx
 
-P = ParamSpec("P")
-
 from .exceptions import (
-    DifyClientError,
     APIError,
     AuthenticationError,
+    DifyClientError,
     RateLimitError,
     ValidationError,
-    NetworkError,
-    TimeoutError,
 )
+
+P = ParamSpec("P")
 
 
 class BaseClientMixin:
@@ -62,11 +60,15 @@ class BaseClientMixin:
         self.enable_logging = enable_logging
 
         # Setup logging
-        self.logger = logging.getLogger(f"dify_client.{self.__class__.__name__.lower()}")
+        self.logger = logging.getLogger(
+            f"dify_client.{self.__class__.__name__.lower()}"
+        )
         if enable_logging and not self.logger.handlers:
             # Create console handler with formatter
             handler = logging.StreamHandler()
-            formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+            formatter = logging.Formatter(
+                "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+            )
             handler.setFormatter(formatter)
             self.logger.addHandler(handler)
             self.logger.setLevel(logging.INFO)
@@ -105,7 +107,7 @@ class BaseClientMixin:
                 try:
                     error_data = response.json()
                     message = error_data.get("message", f"HTTP {response.status_code}")
-                except:
+                except ValueError:
                     message = f"HTTP {response.status_code}: {response.text}"
 
                 raise APIError(
@@ -165,12 +167,16 @@ class BaseClientMixin:
                     )
                     time.sleep(delay)
                 else:
-                    self.logger.error(f"Request failed{context_msg} after {self.max_retries + 1} attempts: {e}")
+                    self.logger.error(
+                        f"Request failed{context_msg} after {self.max_retries + 1} attempts: {e}"
+                    )
                     # Convert to custom exceptions
                     if isinstance(e, httpx.TimeoutException):
                         from .exceptions import TimeoutError
 
-                        raise TimeoutError(f"Request timed out after {self.max_retries} retries{context_msg}") from e
+                        raise TimeoutError(
+                            f"Request timed out after {self.max_retries} retries{context_msg}"
+                        ) from e
                     else:
                         from .exceptions import NetworkError
 
@@ -191,19 +197,27 @@ class BaseClientMixin:
             # String validations
             if isinstance(value, str):
                 if not value.strip():
-                    raise ValidationError(f"Parameter '{key}' cannot be empty or whitespace only")
+                    raise ValidationError(
+                        f"Parameter '{key}' cannot be empty or whitespace only"
+                    )
                 if len(value) > 10000:
-                    raise ValidationError(f"Parameter '{key}' exceeds maximum length of 10000 characters")
+                    raise ValidationError(
+                        f"Parameter '{key}' exceeds maximum length of 10000 characters"
+                    )
 
             # List validations
             elif isinstance(value, list):
                 if len(value) > 1000:
-                    raise ValidationError(f"Parameter '{key}' exceeds maximum size of 1000 items")
+                    raise ValidationError(
+                        f"Parameter '{key}' exceeds maximum size of 1000 items"
+                    )
 
             # Dictionary validations
             elif isinstance(value, dict):
                 if len(value) > 100:
-                    raise ValidationError(f"Parameter '{key}' exceeds maximum size of 100 items")
+                    raise ValidationError(
+                        f"Parameter '{key}' exceeds maximum size of 100 items"
+                    )
 
             # Type-specific validations
             if key == "user" and not isinstance(value, str):
@@ -225,4 +239,6 @@ class BaseClientMixin:
 
     def _log_response(self, response: httpx.Response) -> None:
         """Log response details."""
-        self.logger.info(f"Received response: {response.status_code} ({len(response.content)} bytes)")
+        self.logger.info(
+            f"Received response: {response.status_code} ({len(response.content)} bytes)"
+        )
