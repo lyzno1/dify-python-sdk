@@ -1,12 +1,3 @@
-from dify_client.client import (
-    ChatClient,
-    CompletionClient,
-    DifyClient,
-    KnowledgeBaseClient,
-    WorkflowClient,
-    WorkspaceClient,
-)
-
 from dify_client.async_client import (
     AsyncChatClient,
     AsyncCompletionClient,
@@ -14,6 +5,14 @@ from dify_client.async_client import (
     AsyncKnowledgeBaseClient,
     AsyncWorkflowClient,
     AsyncWorkspaceClient,
+)
+from dify_client.client import (
+    ChatClient,
+    CompletionClient,
+    DifyClient,
+    KnowledgeBaseClient,
+    WorkflowClient,
+    WorkspaceClient,
 )
 
 __all__ = [
