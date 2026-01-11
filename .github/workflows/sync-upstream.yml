@@ -19,6 +19,10 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          # Note: We intentionally do not pass 'token: ${{ secrets.GITHUB_TOKEN }}' here.
+          # When no token is specified, the action uses the default GITHUB_TOKEN which
+          # properly inherits the workflow-level permissions (contents: write, pull-requests: write).
+          # Explicitly passing the token can prevent gh CLI from having PR creation permissions.
 
       - name: Set up Git
         run: |
