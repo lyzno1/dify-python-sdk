@@ -217,7 +217,7 @@ jobs:
             --title "sync: Update from upstream dify_client (${UPSTREAM_SHORT})" \
             --body "$PR_BODY" \
             --head "$BRANCH_NAME" \
-            --base main \
+            --base main
 
       - name: Summary
         if: always()
